@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Dataminer — Diff Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"></script>
+</head>
+<body>
+    <div class="scanline"></div>
+
+    <header>
+        <div class="header-inner">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                        <circle cx="14" cy="14" r="13" stroke="#5865F2" stroke-width="2"/>
+                        <path d="M8 14 L12 10 L16 14 L20 10" stroke="#5865F2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 18 L12 14 L16 18 L20 14" stroke="#5865F2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-title">Discord Dataminer</span>
+                    <span class="logo-sub">Diff Tracker · Canary Edition</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div id="status-dot" class="status-dot" title="Statut de la connexion"></div>
+                <div id="last-updated" class="last-updated">—</div>
+                <button id="btn-refresh" class="btn-refresh" onclick="fetchUpdates()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        <div class="filters">
+            <input type="text" id="search-input" class="search-input" placeholder="🔍  Rechercher un build, un fichier..." oninput="filterCommits()">
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-type="all" onclick="setFilter('all', this)">Tous</button>
+                <button class="filter-tab" data-type="js" onclick="setFilter('js', this)">JS</button>
+                <button class="filter-tab" data-type="css" onclick="setFilter('css', this)">CSS</button>
+                <button class="filter-tab" data-type="other" onclick="setFilter('other', this)">Assets</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div id="stats-bar" class="stats-bar" style="display:none;">
+            <span id="stat-commits">— commits</span>
+            <span class="stat-sep">·</span>
+            <span id="stat-files">— fichiers modifiés</span>
+        </div>
+
+        <section id="updates-list">
+            <div class="loading-screen">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Connexion à GitHub...</div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
