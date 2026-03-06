@@ -1,19 +1,11 @@
 /**
- * Discord Dataminer — Cloudflare Worker Proxy
+ * Discord Dataminer — Cloudflare Worker Proxy v2
  * 
- * DÉPLOIEMENT (5 minutes) :
- * 1. Va sur https://workers.cloudflare.com/ → crée un compte gratuit
- * 2. "Create a Worker" → colle ce code → "Save & Deploy"
- * 3. Copie l'URL du worker (ex: https://discord-proxy.TON-NOM.workers.dev)
- * 4. Dans script.js, remplace PROXY_URL par ton URL
- * 
- * Gratuit : 100 000 requêtes/jour, pas de carte bancaire requise.
+ * MISE À JOUR :
+ * 1. Va sur https://workers.cloudflare.com/
+ * 2. Ouvre ton worker "dispatch" → Edit Code
+ * 3. Remplace TOUT le code par celui-ci → Save & Deploy
  */
-
-const ALLOWED_ORIGINS = [
-    'https://canary.discord.com',
-    'https://discord.com',
-];
 
 export default {
     async fetch(request) {
@@ -22,36 +14,66 @@ export default {
             return new Response(null, {
                 headers: {
                     'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET',
+                    'Access-Control-Allow-Methods': 'GET, OPTIONS',
                     'Access-Control-Max-Age': '86400',
                 },
             });
         }
 
         const url    = new URL(request.url);
-        // Le fichier à fetcher est passé en query param: ?url=https://canary.discord.com/assets/web.abc.js
         const target = url.searchParams.get('url');
 
         if (!target) {
             return new Response('Missing ?url= parameter', { status: 400 });
         }
 
-        // Sécurité : on autorise seulement les assets Discord
-        const isAllowed = ALLOWED_ORIGINS.some(o => target.startsWith(o));
-        if (!isAllowed) {
+        // Sécurité : seulement les assets Discord
+        if (!target.startsWith('https://canary.discord.com/assets/') &&
+            !target.startsWith('https://discord.com/assets/')) {
             return new Response('Origin not allowed', { status: 403 });
         }
 
         try {
             const upstream = await fetch(target, {
+                method: 'GET',
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (compatible; DiscordDataminer/1.0)',
+                    // Headers qui imitent un vrai navigateur Chrome
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                    'Accept': '*/*',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Referer': 'https://canary.discord.com/',
+                    'Origin': 'https://canary.discord.com',
+                    'Sec-Fetch-Dest': 'script',
+                    'Sec-Fetch-Mode': 'no-cors',
+                    'Sec-Fetch-Site': 'same-origin',
+                    'Sec-CH-UA': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+                    'Sec-CH-UA-Mobile': '?0',
+                    'Sec-CH-UA-Platform': '"Windows"',
+                    'Connection': 'keep-alive',
                 },
-                cf: { cacheEverything: true, cacheTtl: 3600 }, // Cache 1h côté Cloudflare
+                cf: {
+                    // Cache Cloudflare côté edge pendant 1h
+                    cacheEverything: true,
+                    cacheTtl: 3600,
+                },
+                redirect: 'follow',
             });
 
             if (!upstream.ok) {
-                return new Response(`Upstream error: ${upstream.status}`, { status: upstream.status });
+                return new Response(
+                    `Discord returned HTTP ${upstream.status} for ${target}`,
+                    { status: upstream.status }
+                );
+            }
+
+            // Vérifier que c'est bien du JS/CSS et pas une page d'erreur HTML
+            const contentType = upstream.headers.get('Content-Type') || '';
+            if (contentType.includes('text/html')) {
+                return new Response(
+                    'Discord returned an HTML error page — the file may not exist or Discord is rate-limiting',
+                    { status: 503 }
+                );
             }
 
             const body = await upstream.arrayBuffer();
@@ -59,15 +81,19 @@ export default {
             return new Response(body, {
                 status: 200,
                 headers: {
-                    'Content-Type': upstream.headers.get('Content-Type') || 'application/javascript',
+                    'Content-Type': contentType || 'application/javascript',
                     'Access-Control-Allow-Origin': '*',
                     'Cache-Control': 'public, max-age=3600',
                     'X-Proxied-From': target,
+                    'X-Content-Length': body.byteLength.toString(),
                 },
             });
 
         } catch (err) {
-            return new Response(`Worker error: ${err.message}`, { status: 500 });
+            return new Response(`Worker error: ${err.message}`, {
+                status: 500,
+                headers: { 'Access-Control-Allow-Origin': '*' },
+            });
         }
     },
 };
