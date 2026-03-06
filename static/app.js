@@ -20,7 +20,7 @@ let diffCache    = new Map();
 
 // ── FETCH ─────────────────────────────────────────────────────────────────────
 async function getChangelog() {
-    const res = await fetch(`${RAW}/changelog.json?_=${Date.now()}`);
+    const res = await fetch(`${RAW}/static/changelog.json?_=${Date.now()}`);
     if (!res.ok) throw new Error(`changelog.json introuvable (HTTP ${res.status}) — le bot a-t-il déjà tourné ?`);
     return res.json();
 }
