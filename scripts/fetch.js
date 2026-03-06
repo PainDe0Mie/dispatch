@@ -14,7 +14,7 @@ const DISCORD_CANARY  = 'https://canary.discord.com';
 const DATAMINING_REPO = 'Discord-Datamining/Discord-Datamining';
 const ASSETS_DIR      = path.join(ROOT, 'assets');
 const STATE_FILE      = path.join(ROOT, 'state.json');
-const CHANGELOG_FILE  = path.join(ROOT, 'changelog.json');
+const CHANGELOG_FILE  = path.join(ROOT, 'static/changelog.json');
 
 const BROWSER_HEADERS = {
     'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
