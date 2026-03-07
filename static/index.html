@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Tracker — Diff Viewer</title>
+    <title>Dispatch</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -23,8 +23,8 @@
                 </svg>
             </div>
             <div>
-                <span class="logo-title">Discord Tracker</span>
-                <span class="logo-sub">Self-hosted · Zero CORS · Auto-updated</span>
+                <span class="logo-title">Dispatch</span>
+                <span class="logo-sub">Discord Build List</span>
             </div>
         </div>
         <div class="header-actions">
@@ -35,7 +35,6 @@
                 Actualiser
             </button>
         </div>
-    </div>
     <div class="filters">
         <input type="text" id="search-input" class="search-input" placeholder="🔍  Rechercher build, fichier..." oninput="filterCards()">
         <div class="filter-tabs">
@@ -51,6 +50,17 @@
         <span id="stat-builds">—</span><span class="stat-sep">·</span><span id="stat-files">—</span>
         <span class="stat-sep">·</span><span id="stat-source" class="stat-source">—</span>
     </div>
+<section class="dashboard-stats">
+    <div class="stats-header">
+        <div class="live-info">
+            <span class="pulse-icon"></span>
+            <span id="live-build-label">Dernier build détecté : <strong id="current-live-id">—</strong></span>
+        </div>
+        <div class="activity-label">ACTIVITÉ (7 DERNIERS JOURS)</div>
+    </div>
+    <div id="activity-graph" class="graph-container">
+        </div>
+</section>
     <section id="updates-list">
         <div class="loading-screen">
             <div class="loading-spinner"></div>

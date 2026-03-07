@@ -20,7 +20,7 @@ let diffCache    = new Map();
 
 // ── FETCH ─────────────────────────────────────────────────────────────────────
 async function getChangelog() {
-    const res = await fetch(`${RAW}/static/changelog.json?_=${Date.now()}`);
+    const res = await fetch(`${RAW}/changelog.json?_=${Date.now()}`);
     if (!res.ok) throw new Error(`changelog.json introuvable (HTTP ${res.status}) — le bot a-t-il déjà tourné ?`);
     return res.json();
 }
@@ -335,6 +335,49 @@ window.switchTab=function(sha,type,tabEl){const card=document.getElementById(`pa
 window.setFilter=function(type,btn){activeFilter=type;document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');filterCards();};
 window.filterCards=function(){const q=document.getElementById('search-input').value.toLowerCase().trim();let v=0;document.querySelectorAll('.update-card').forEach(c=>{const t=(c.dataset.sha+' '+c.dataset.files).toLowerCase();const f=c.dataset.files;const mQ=!q||t.includes(q);const mT=activeFilter==='all'||(activeFilter==='js'&&f.includes('.js'))||(activeFilter==='css'&&f.includes('.css'));const show=mQ&&mT;c.style.display=show?'':'none';if(show)v++;});let nr=document.getElementById('no-results');if(!v&&!nr){nr=document.createElement('div');nr.id='no-results';nr.className='no-results';nr.textContent='Aucun résultat.';document.getElementById('updates-list').appendChild(nr);}else if(v&&nr)nr.remove();};
 
+// --- FONCTION DE GÉNÉRATION DU GRAPHIQUE ---
+function generateActivityGraph(data) {
+    const graphContainer = document.getElementById('activity-graph');
+    if (!graphContainer) return;
+
+    // 1. On récupère les dates des 7 derniers jours
+    const days = {};
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        days[dateStr] = 0;
+    }
+
+    // 2. On compte combien de builds par jour (en se basant sur la date du commit/build)
+    data.forEach(entry => {
+        // On suppose que entry.date existe (format ISO ou timestamp)
+        // Si tu utilises les commits GitHub, c'est commit.author.date
+        const dateStr = new Date(entry.date || entry.commit?.author.date).toISOString().split('T')[0];
+        if (days[dateStr] !== undefined) {
+            days[dateStr]++;
+        }
+    });
+
+    // 3. On affiche les barres
+    graphContainer.innerHTML = '';
+    const maxBuilds = Math.max(...Object.values(days), 1);
+
+    Object.entries(days).forEach(([date, count]) => {
+        const bar = document.createElement('div');
+        bar.className = 'graph-bar';
+        const height = (count / maxBuilds) * 100;
+        bar.style.height = `${Math.max(height, 10)}%`; // Minimum 10% pour le style
+        
+        // Intensité de la couleur selon le nombre de builds
+        if (count > 0) bar.style.opacity = 0.5 + (count / maxBuilds) * 0.5;
+        if (count === 0) bar.style.background = 'var(--border)';
+
+        bar.setAttribute('data-label', `${count} builds (${date})`);
+        graphContainer.appendChild(bar);
+    });
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
     const container=document.getElementById('updates-list');
@@ -366,6 +409,22 @@ async function init() {
         statusDot.className='status-dot error';
         container.innerHTML=`<div class="diff-status status-error" style="padding:60px 20px">❌ ${err.message}</div>`;
     } finally { btnRefresh.classList.remove('loading'); }
+
+try {
+        // Imaginons que 'data' est ta liste de builds
+        const data = await getChangelog(); // ou githubGet(...)
+        
+        // Afficher le dernier build comme "Live"
+        if (data.length > 0) {
+            const latest = data[0];
+            const buildID = latest.build || latest.commit?.message.match(/Build (\d+)/)?.[1];
+            document.getElementById('current-live-id').textContent = buildID || 'Inconnu';
+        }
+
+        // Générer le graphique
+        generateActivityGraph(data);
+        
+    } catch(err) { /* ... */ }
 }
 
 init();
