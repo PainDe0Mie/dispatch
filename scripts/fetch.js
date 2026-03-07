@@ -132,14 +132,19 @@ async function main() {
         const parsed = parseCommit(commit.commit.message);
         log(`\n── Commit ${commit.sha.slice(0,7)} · Build #${parsed.buildNumber}`);
         const allSections = Object.entries(parsed.files).map(([k,v])=>`${k}:${v.length}`).join(' ');
-        log(`   Sections: ${allSections || '⚠️ AUCUNE — vérifier format commit'}`);
-        if (!allSections) {
-            // Log les 5 premières lignes du message pour debug
-            const preview = commit.commit.message.replace(/\r/g,'').split('\n').slice(0,8).join(' | ');
-            log(`   Message: ${preview}`);
-        }
-
         const allFiles = Object.values(parsed.files).flat();
+
+        if (allFiles.length === 0) {
+            // Commit sans assets JS/CSS (ex: mise à jour de current.js uniquement)
+            const preview = commit.commit.message.replace(/\r/g,'').split('\n').slice(0,3).join(' | ');
+            log(`   ⏭  Commit sans assets à télécharger (current.js ou autre) — skip`);
+            log(`   Message: "${preview}"`);
+            // On avance quand même lastSha pour ne pas retraiter ce commit
+            state.lastSha = commit.sha;
+            continue;
+        }
+        log(`   Sections: ${allSections}`);
+
         const entry = {
             sha: commit.sha, date: commit.commit.author.date,
             buildNumber: parsed.buildNumber, files: parsed.files,
