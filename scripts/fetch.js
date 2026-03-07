@@ -100,11 +100,29 @@ async function main() {
 
     let toProcess = [];
     if (!state.lastSha) {
-        toProcess = allCommits.slice(0, 30).reverse(); // Premier run: reprend les 30 derniers
+        // Premier run : prend les 30 derniers commits
+        toProcess = allCommits.slice(0, 30).reverse();
     } else {
         const idx = allCommits.findIndex(c => c.sha === state.lastSha);
-        if (idx <= 0) { log('Aucun nouveau commit.'); return; }
-        toProcess = allCommits.slice(0, idx).reverse();
+
+        if (idx === 0) {
+            // lastSha est déjà le commit le plus récent → rien à faire
+            log('✅ Déjà à jour.');
+            return;
+        }
+
+        if (idx === -1) {
+            // lastSha introuvable dans la fenêtre de 50 commits.
+            // Ça arrive si Discord a poussé >50 builds depuis le dernier run,
+            // ou si le workflow a été inactif longtemps.
+            // → On prend tous les commits disponibles dans la fenêtre.
+            log(`⚠️  lastSha introuvable dans les ${allCommits.length} commits récupérés.`);
+            log(`   Probable gap > ${allCommits.length} commits. On traite toute la fenêtre.`);
+            toProcess = [...allCommits].reverse();
+        } else {
+            // Cas normal : on prend tout ce qui est après lastSha
+            toProcess = allCommits.slice(0, idx).reverse();
+        }
     }
 
     log(`${toProcess.length} commit(s) à traiter.`);
