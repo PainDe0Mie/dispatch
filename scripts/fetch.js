@@ -10,7 +10,7 @@ const DISCORD_CANARY  = 'https://canary.discord.com';
 const DATAMINING_REPO = 'Discord-Datamining/Discord-Datamining';
 const ASSETS_DIR      = path.join(ROOT, 'assets');
 const STATE_FILE      = path.join(ROOT, 'state.json');
-const CHANGELOG_FILE  = path.join(ROOT, 'static/changelog.json');
+const CHANGELOG_FILE  = path.join(ROOT, 'changelog.json');
 
 const BROWSER_HEADERS = {
     'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
@@ -30,17 +30,38 @@ function loadJSON(file, fallback) {
 function log(msg) { console.log(`[${new Date().toISOString()}] ${msg}`); }
 
 function parseCommit(message) {
-    const lines = message.split('\n').map(l => l.trim());
+    // Normalise les fins de ligne Windows/Mac
+    const lines = message.replace(/\r/g, '').split('\n').map(l => l.trim());
     const result = { buildNumber: null, files: {} };
     const m = lines[0].match(/(\d{5,})/);
     result.buildNumber = m ? m[1] : lines[0];
-    const SECS = { 'Scripts':'js','Stylesheet':'css','Stylesheets':'css','Workers':'worker','Assets':'asset','Manifests':'manifest' };
+
+    // Supporte tous les formats de section connus
+    const SECS = {
+        'Scripts':'js', 'Script':'js', 'JavaScript':'js', 'JS':'js',
+        'Stylesheet':'css', 'Stylesheets':'css', 'CSS':'css',
+        'Workers':'worker', 'Worker':'worker',
+        'Assets':'asset', 'Asset':'asset',
+        'Manifests':'manifest', 'Manifest':'manifest',
+        'Other':'other',
+    };
     let sec = null;
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i]; if (!line) continue;
-        const sk = Object.keys(SECS).find(k => line === k+':');
-        if (sk) { sec = SECS[sk]; result.files[sec] ??= []; continue; }
-        if (line.startsWith('- ') && sec) result.files[sec].push(line.slice(2).trim());
+
+        // Détection de section (avec ou sans ":")
+        const sKey = Object.keys(SECS).find(k => line === k+':' || line === k);
+        if (sKey) { sec = SECS[sKey]; result.files[sec] ??= []; continue; }
+
+        // Ligne de fichier : supporte "- file.js" ET "file.js" (nouveau format)
+        if (sec) {
+            let fname = null;
+            if (line.startsWith('- ')) fname = line.slice(2).trim();
+            else if (/^[\w\-]+\.[\w\-\.]+$/.test(line)) fname = line; // bare filename
+            if (fname && fname.length > 0) {
+                result.files[sec].push(fname);
+            }
+        }
     }
     return result;
 }
@@ -75,11 +96,11 @@ async function main() {
     fs.mkdirSync(ASSETS_DIR, { recursive: true });
 
     // 1. Récupère les commits récents de Discord-Datamining
-    const allCommits = await githubGet(`https://api.github.com/repos/${DATAMINING_REPO}/commits?per_page=15`);
+    const allCommits = await githubGet(`https://api.github.com/repos/${DATAMINING_REPO}/commits?per_page=50`);
 
     let toProcess = [];
     if (!state.lastSha) {
-        toProcess = allCommits.slice(0, 3).reverse(); // Premier run: 3 derniers seulement
+        toProcess = allCommits.slice(0, 30).reverse(); // Premier run: reprend les 30 derniers
     } else {
         const idx = allCommits.findIndex(c => c.sha === state.lastSha);
         if (idx <= 0) { log('Aucun nouveau commit.'); return; }
@@ -92,6 +113,13 @@ async function main() {
     for (const commit of toProcess) {
         const parsed = parseCommit(commit.commit.message);
         log(`\n── Commit ${commit.sha.slice(0,7)} · Build #${parsed.buildNumber}`);
+        const allSections = Object.entries(parsed.files).map(([k,v])=>`${k}:${v.length}`).join(' ');
+        log(`   Sections: ${allSections || '⚠️ AUCUNE — vérifier format commit'}`);
+        if (!allSections) {
+            // Log les 5 premières lignes du message pour debug
+            const preview = commit.commit.message.replace(/\r/g,'').split('\n').slice(0,8).join(' | ');
+            log(`   Message: ${preview}`);
+        }
 
         const allFiles = Object.values(parsed.files).flat();
         const entry = {
