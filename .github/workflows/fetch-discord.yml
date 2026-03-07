@@ -2,17 +2,23 @@ name: 🤖 Fetch Discord Assets
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # toutes les 5 minutes
-  workflow_dispatch:          # déclenchement manuel
+    # Toutes les 10 min (GitHub throttle les crons < 5-10 min sur les petits repos)
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
 
 jobs:
   fetch:
     runs-on: ubuntu-latest
+    timeout-minutes: 8   # Évite les jobs bloqués qui consomment des minutes
+
     permissions:
       contents: write
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Important: récupère l'état le plus récent (state.json mis à jour par le run précédent)
+          fetch-depth: 1
 
       - uses: actions/setup-node@v4
         with:
@@ -28,16 +34,20 @@ jobs:
         run: node scripts/fetch.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Timeout du step aussi (le download peut bloquer)
+        timeout-minutes: 6
 
-      - name: Commit changes
+      - name: Commit & push changes
         run: |
           git config user.name  "discord-tracker[bot]"
           git config user.email "discord-tracker[bot]@users.noreply.github.com"
           git add -A
           if git diff --staged --quiet; then
-            echo "::notice::Aucun changement"
+            echo "::notice::Aucun changement — déjà à jour"
           else
-            CHANGES=$(git diff --staged --stat | tail -1)
-            git commit -m "🤖 $(date -u '+%Y-%m-%d %H:%M UTC') · $CHANGES"
+            STATS=$(git diff --staged --stat | tail -1)
+            git commit -m "🤖 $(date -u '+%Y-%m-%d %H:%M UTC') · $STATS"
+            # Retry push si conflit (deux runs simultanés)
+            git pull --rebase origin main || true
             git push
           fi
