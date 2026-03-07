@@ -12,6 +12,7 @@
 </head>
 <body>
 <div class="scanline"></div>
+
 <header>
     <div class="header-inner">
         <div class="logo">
@@ -24,7 +25,7 @@
             </div>
             <div>
                 <span class="logo-title">Dispatch</span>
-                <span class="logo-sub">Discord Build List</span>
+                <span class="logo-sub">Discord Build Tracker</span>
             </div>
         </div>
         <div class="header-actions">
@@ -35,39 +36,109 @@
                 Actualiser
             </button>
         </div>
-    <div class="filters">
+    </div>
+
+    <div class="page-nav">
+        <div class="page-nav-inner">
+            <button class="page-tab active" data-page="builds" onclick="switchPage('builds',this)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                Builds
+            </button>
+            <button class="page-tab" data-page="assets" onclick="switchPage('assets',this)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Assets
+            </button>
+            <button class="page-tab" data-page="features" onclick="switchPage('features',this)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+                Features
+                <span class="tab-badge" id="features-badge"></span>
+            </button>
+            <button class="page-tab" data-page="search" onclick="switchPage('search',this)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Recherche
+            </button>
+        </div>
+    </div>
+
+    <div class="filters" id="builds-filters">
         <input type="text" id="search-input" class="search-input" placeholder="🔍  Rechercher build, fichier..." oninput="filterCards()">
         <div class="filter-tabs">
             <button class="filter-tab active" onclick="setFilter('all',this)">Tous</button>
             <button class="filter-tab" onclick="setFilter('js',this)">JS</button>
             <button class="filter-tab" onclick="setFilter('css',this)">CSS</button>
         </div>
+        <button class="btn-compact" id="btn-compact" onclick="toggleCompact(this)" title="Vue compacte">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+        </button>
+        <button class="btn-compact" onclick="showShortcutsHelp()" title="Raccourcis clavier (?)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </button>
     </div>
 </header>
 
 <main>
     <div id="stats-bar" class="stats-bar" style="display:none">
-        <span id="stat-builds">—</span><span class="stat-sep">·</span><span id="stat-files">—</span>
-        <span class="stat-sep">·</span><span id="stat-source" class="stat-source">—</span>
+        <span id="stat-builds">—</span>
+        <span class="stat-sep">·</span>
+        <span id="stat-files">—</span>
+        <span class="stat-sep">·</span>
+        <span id="stat-source" class="stat-source">—</span>
     </div>
-<section class="dashboard-stats">
-    <div class="stats-header">
-        <div class="live-info">
-            <span class="pulse-icon"></span>
-            <span id="live-build-label">Dernier build détecté : <strong id="current-live-id">—</strong></span>
+
+    <section class="dashboard-stats">
+        <div class="stats-header">
+            <div class="live-info">
+                <span class="pulse-icon"></span>
+                <span>Dernier build : <strong id="current-live-id">—</strong></span>
+            </div>
+            <div class="activity-label">ACTIVITÉ — 7 DERNIERS JOURS</div>
         </div>
-        <div class="activity-label">ACTIVITÉ (7 DERNIERS JOURS)</div>
-    </div>
-    <div id="activity-graph" class="graph-container">
-        </div>
-</section>
-    <section id="updates-list">
-        <div class="loading-screen">
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Chargement du changelog…</div>
-        </div>
+        <div id="activity-graph" class="graph-container"></div>
     </section>
+
+    <!-- PAGE: Builds -->
+    <div id="page-builds">
+        <section id="updates-list">
+            <div class="loading-screen">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Chargement du changelog…</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- PAGE: Assets -->
+    <div id="page-assets" style="display:none">
+        <div class="assets-loading">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">En attente…</div>
+        </div>
+    </div>
+
+    <!-- PAGE: Features -->
+    <div id="page-features" style="display:none">
+        <div class="diff-status status-loading" style="padding:60px">Chargement…</div>
+    </div>
+
+    <!-- PAGE: Recherche dans le code -->
+    <div id="page-search" style="display:none">
+        <div class="search-page">
+            <div class="search-bar-wrap">
+                <input type="text" id="code-search-input" class="code-search-input"
+                    placeholder="Rechercher une string, une fonction, un ID… dans le web.js"
+                    onkeydown="if(event.key==='Enter')runCodeSearch()">
+                <button class="btn-code-search" onclick="runCodeSearch()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Rechercher
+                </button>
+            </div>
+            <div class="search-tips">
+                Cherche dans le dernier <code>web.js</code> sauvegardé · Appuie sur <kbd>Entrée</kbd> pour lancer
+            </div>
+            <div id="search-results"></div>
+        </div>
+    </div>
 </main>
+
 <script src="app.js"></script>
 </body>
 </html>
