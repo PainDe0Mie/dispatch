@@ -95,36 +95,40 @@ async function main() {
     log(`Dernier commit traité: ${state.lastSha || 'aucun'}`);
     fs.mkdirSync(ASSETS_DIR, { recursive: true });
 
-    // 1. Récupère les commits récents de Discord-Datamining
-    const allCommits = await githubGet(`https://api.github.com/repos/${DATAMINING_REPO}/commits?per_page=50`);
+    // 1. Récupère les commits depuis Discord-Datamining (avec pagination)
+    //    Continue de paginer jusqu'à trouver lastSha ou atteindre MAX_PAGES
+    const MAX_PAGES = 10; // max 10 × 100 = 1000 commits en arrière
+    let allCommits = [];
+    let foundLastSha = false;
+
+    if (!state.lastSha) {
+        // Premier run : juste la première page
+        const first = await githubGet(`https://api.github.com/repos/${DATAMINING_REPO}/commits?per_page=100&page=1`);
+        allCommits = first;
+    } else {
+        for (let page = 1; page <= MAX_PAGES; page++) {
+            log(`   Récupération page ${page}/max${MAX_PAGES}…`);
+            const batch = await githubGet(`https://api.github.com/repos/${DATAMINING_REPO}/commits?per_page=100&page=${page}`);
+            if (!batch || !batch.length) break;
+            allCommits.push(...batch);
+            if (batch.some(c => c.sha === state.lastSha)) { foundLastSha = true; break; }
+        }
+        if (!foundLastSha) log(`⚠️ lastSha introuvable après ${allCommits.length} commits. On traite toute la fenêtre.`);
+    }
 
     let toProcess = [];
     if (!state.lastSha) {
-        // Premier run : prend les 30 derniers commits
         toProcess = allCommits.slice(0, 30).reverse();
     } else {
         const idx = allCommits.findIndex(c => c.sha === state.lastSha);
-
-        if (idx === 0) {
-            // lastSha est déjà le commit le plus récent → rien à faire
-            log('✅ Déjà à jour.');
-            return;
-        }
-
+        if (idx === 0) { log('✅ Déjà à jour.'); return; }
         if (idx === -1) {
-            // lastSha introuvable dans la fenêtre de 50 commits.
-            // Ça arrive si Discord a poussé >50 builds depuis le dernier run,
-            // ou si le workflow a été inactif longtemps.
-            // → On prend tous les commits disponibles dans la fenêtre.
-            log(`⚠️  lastSha introuvable dans les ${allCommits.length} commits récupérés.`);
-            log(`   Probable gap > ${allCommits.length} commits. On traite toute la fenêtre.`);
+            log(`⚠️ lastSha toujours introuvable — traitement de toute la fenêtre.`);
             toProcess = [...allCommits].reverse();
         } else {
-            // Cas normal : on prend tout ce qui est après lastSha
             toProcess = allCommits.slice(0, idx).reverse();
         }
     }
-
     log(`${toProcess.length} commit(s) à traiter.`);
     const newEntries = [];
 
@@ -177,7 +181,8 @@ async function main() {
 
     // 2. Met à jour le changelog.json (utilisé par le site web)
     const existing = loadJSON(CHANGELOG_FILE, []);
-    const merged   = [...newEntries, ...existing].slice(0, 300);
+    // newEntries est en ordre ancien→récent, on reverse pour avoir récent→ancien
+    const merged   = [...newEntries.slice().reverse(), ...existing].slice(0, 300);
     fs.writeFileSync(CHANGELOG_FILE, JSON.stringify(merged, null, 2));
     fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
 
