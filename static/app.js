@@ -1,12 +1,4 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// app.js — Discord Tracker (self-hosted)
-// Lit changelog.json et les fichiers assets/ de TON repo GitHub
-// Zéro proxy, zéro CORS, zéro Discord CDN — tout vient de raw.githubusercontent.com
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// ⚙️  CONFIGURE ICI ton repo GitHub (celui où tu as déployé ce projet)
-// Ex: 'lapinou5414/discord-tracker'
-const MY_REPO = 'PainDe0Mie/dispatch';  // ← CHANGE ÇA
+const MY_REPO = 'PainDe0Mie/dispatch'; 
 
 const RAW   = `https://raw.githubusercontent.com/${MY_REPO}/main`;
 const GHAPI = `https://api.github.com/repos/${MY_REPO}`;
@@ -20,7 +12,7 @@ let diffCache    = new Map();
 
 // ── FETCH ─────────────────────────────────────────────────────────────────────
 async function getChangelog() {
-    const res = await fetch(`${RAW}/changelog.json?_=${Date.now()}`);
+    const res = await fetch(`${RAW}/static/changelog.json?_=${Date.now()}`);
     if (!res.ok) throw new Error(`changelog.json introuvable (HTTP ${res.status}) — le bot a-t-il déjà tourné ?`);
     return res.json();
 }
@@ -388,7 +380,7 @@ async function init() {
 
     if (MY_REPO === 'TON_USERNAME/TON_REPO') {
         container.innerHTML=`<div class="diff-status status-error" style="padding:40px 20px;line-height:2">
-            ⚙️ Configure ton repo dans <code style="background:var(--bg-raised);padding:2px 6px;border-radius:4px">app.js</code> ligne 12 :<br>
+            ⚙️ Configure your repo on <code style="background:var(--bg-raised);padding:2px 6px;border-radius:4px">app.js</code> ligne 12 :<br>
             <code style="background:var(--bg-raised);padding:4px 10px;border-radius:4px;font-size:0.9rem">const MY_REPO = 'ton-username/ton-repo';</code>
         </div>`;
         btnRefresh.classList.remove('loading'); return;
@@ -410,21 +402,20 @@ async function init() {
         container.innerHTML=`<div class="diff-status status-error" style="padding:60px 20px">❌ ${err.message}</div>`;
     } finally { btnRefresh.classList.remove('loading'); }
 
-try {
-        // Imaginons que 'data' est ta liste de builds
-        const data = await getChangelog(); // ou githubGet(...)
+    try {
+        const data = await getChangelog();
         
-        // Afficher le dernier build comme "Live"
         if (data.length > 0) {
             const latest = data[0];
             const buildID = latest.build || latest.commit?.message.match(/Build (\d+)/)?.[1];
             document.getElementById('current-live-id').textContent = buildID || 'Inconnu';
         }
 
-        // Générer le graphique
         generateActivityGraph(data);
         
-    } catch(err) { /* ... */ }
+    } catch(err) { 
+        console.log(err);
+    }
 }
 
 init();
