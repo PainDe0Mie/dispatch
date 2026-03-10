@@ -1,5 +1,77 @@
 [
   {
+    "sha": "17505e1d81b18148a04ba408e8ef98a26f6f0596",
+    "date": "2026-03-10T21:43:37Z",
+    "buildNumber": "508858",
+    "files": {
+      "js": [
+        "libdiscore-wasm-fetch.639f9ac1a0e489a0.js",
+        "fast-connect.d559f73511a2ba36.js",
+        "sentry.b6861fe24901e3ec.js",
+        "web.20deca7a4f26cb83.js"
+      ],
+      "css": [
+        "web.17605fc07c11dd85.css"
+      ]
+    },
+    "savedFiles": [
+      "libdiscore-wasm-fetch.639f9ac1a0e489a0.js",
+      "fast-connect.d559f73511a2ba36.js",
+      "sentry.b6861fe24901e3ec.js",
+      "web.20deca7a4f26cb83.js",
+      "web.17605fc07c11dd85.css"
+    ],
+    "failedFiles": []
+  },
+  {
+    "sha": "8ca8f9b6dd6da8b6215ce80e8e55985d89f25423",
+    "date": "2026-03-10T21:41:48Z",
+    "buildNumber": "508857",
+    "files": {
+      "js": [
+        "libdiscore-wasm-fetch.639f9ac1a0e489a0.js",
+        "fast-connect.35d83b3667092338.js",
+        "sentry.b17e65c74e8f0246.js",
+        "web.f61b871f3dc2dc6f.js"
+      ],
+      "css": [
+        "web.17605fc07c11dd85.css"
+      ]
+    },
+    "savedFiles": [
+      "libdiscore-wasm-fetch.639f9ac1a0e489a0.js",
+      "fast-connect.35d83b3667092338.js",
+      "sentry.b17e65c74e8f0246.js",
+      "web.f61b871f3dc2dc6f.js",
+      "web.17605fc07c11dd85.css"
+    ],
+    "failedFiles": []
+  },
+  {
+    "sha": "20b7dbc89edbc9e601acfb528a724d086725f101",
+    "date": "2026-03-10T21:31:44Z",
+    "buildNumber": "508848",
+    "files": {
+      "js": [
+        "libdiscore-wasm-fetch.639f9ac1a0e489a0.js",
+        "fast-connect.8881bec91bba08eb.js",
+        "sentry.df337955bd1eeb4e.js",
+        "web.9c4fe6f31a3b44e7.js"
+      ],
+      "css": [
+        "web.17605fc07c11dd85.css"
+      ]
+    },
+    "savedFiles": [
+      "libdiscore-wasm-fetch.639f9ac1a0e489a0.js",
+      "fast-connect.8881bec91bba08eb.js",
+      "sentry.df337955bd1eeb4e.js",
+      "web.9c4fe6f31a3b44e7.js",
+      "web.17605fc07c11dd85.css"
+    ],
+    "failedFiles": []
+  },
+  {
     "sha": "0a69ed731fb6dcf68ae8523ff20b17c6a145275b",
     "date": "2026-03-10T21:26:28Z",
     "buildNumber": "508842",
