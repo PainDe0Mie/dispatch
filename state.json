@@ -1,5 +1,5 @@
 {
-  "lastSha": "660965ee775489e9ae5adc32987a5bbda83b370d",
+  "lastSha": "a890f5ca70e488c1da2025d7c77704e84247b3b4",
   "knownFiles": {
     "libdiscore-wasm-fetch.eb7ad6a5a94e6237.js": "2efcbf611c8d2e9e749033245841661307e0a161",
     "fast-connect.079e207b527c0628.js": "2efcbf611c8d2e9e749033245841661307e0a161",
@@ -861,6 +861,9 @@
     "web.7564cee61dc9668f.js": "de1f637cbe6821415b3a86947e66048ed6e598af",
     "fast-connect.ad5d47508e35869d.js": "660965ee775489e9ae5adc32987a5bbda83b370d",
     "sentry.a577447017c4b6ad.js": "660965ee775489e9ae5adc32987a5bbda83b370d",
-    "web.648d3fedbf5ecff2.js": "660965ee775489e9ae5adc32987a5bbda83b370d"
+    "web.648d3fedbf5ecff2.js": "660965ee775489e9ae5adc32987a5bbda83b370d",
+    "fast-connect.7bd80105b1e707f2.js": "a890f5ca70e488c1da2025d7c77704e84247b3b4",
+    "sentry.d2590acfc3b9ca6e.js": "a890f5ca70e488c1da2025d7c77704e84247b3b4",
+    "web.c6a6579eac1ab145.js": "a890f5ca70e488c1da2025d7c77704e84247b3b4"
   }
 }
