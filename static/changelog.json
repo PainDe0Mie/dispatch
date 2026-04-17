@@ -1,5 +1,29 @@
 [
   {
+    "sha": "703d7efaa4c2757e449d7a04701ab2b65529209b",
+    "date": "2026-04-17T10:17:18Z",
+    "buildNumber": "530806",
+    "files": {
+      "js": [
+        "libdiscore-wasm-fetch.c9e8673d2571d743.js",
+        "fast-connect.36b47f6c607a8328.js",
+        "sentry.f583509e9072a662.js",
+        "web.5a00c588d232dfcc.js"
+      ],
+      "css": [
+        "web.d6dfb5d25527db98.css"
+      ]
+    },
+    "savedFiles": [
+      "libdiscore-wasm-fetch.c9e8673d2571d743.js",
+      "fast-connect.36b47f6c607a8328.js",
+      "sentry.f583509e9072a662.js",
+      "web.5a00c588d232dfcc.js",
+      "web.d6dfb5d25527db98.css"
+    ],
+    "failedFiles": []
+  },
+  {
     "sha": "ffd22a8e033c6a19848eeb4e6a996d8d3877156b",
     "date": "2026-04-17T10:05:28Z",
     "buildNumber": "530804",
@@ -7171,30 +7195,6 @@
       "fast-connect.786310a0a0e048cf.js",
       "sentry.4a73d18c7f503f89.js",
       "web.db8d4aabe5cd8033.js",
-      "web.b55e4aa60a3f6b88.css"
-    ],
-    "failedFiles": []
-  },
-  {
-    "sha": "0c218d4c5ad25e077b5bd1dec040a19abee351f0",
-    "date": "2026-04-14T18:32:42Z",
-    "buildNumber": "528400",
-    "files": {
-      "js": [
-        "libdiscore-wasm-fetch.b0c160428febe877.js",
-        "fast-connect.1808216f0952de82.js",
-        "sentry.8960b8f25c028ea8.js",
-        "web.f8ff5b586a2267f2.js"
-      ],
-      "css": [
-        "web.b55e4aa60a3f6b88.css"
-      ]
-    },
-    "savedFiles": [
-      "libdiscore-wasm-fetch.b0c160428febe877.js",
-      "fast-connect.1808216f0952de82.js",
-      "sentry.8960b8f25c028ea8.js",
-      "web.f8ff5b586a2267f2.js",
       "web.b55e4aa60a3f6b88.css"
     ],
     "failedFiles": []
